@@ -7,14 +7,19 @@ const app = express();
 // Configure the HTTPS proxy agent
 const httpsAgent = new HttpsProxyAgent("https://e3z4acki-gv85bq9:ksc8d3rmv7@de-008.totallyacdn.com:443");
 
-// Middleware to extract target URL from the request path
+// Middleware to extract and validate target URL from the request path
 app.use(
   "/",
   (req, res, next) => {
     const urlPath = req.path.slice(1); // Remove leading '/'
     
     try {
-      // Construct the full URL (e.g., "https://example.com")
+      // Check if the URL starts with "http" or "https"
+      if (!/^https?:\/\//.test(urlPath)) {
+        throw new Error("Invalid URL format");
+      }
+      
+      // Construct and decode the target URL
       req.targetUrl = decodeURIComponent(urlPath);
       next();
     } catch (error) {
@@ -22,6 +27,11 @@ app.use(
     }
   },
   (req, res, next) => {
+    if (!req.targetUrl) {
+      res.status(400).send("Invalid target URL.");
+      return;
+    }
+
     // Proxy middleware options with dynamic target
     const proxyOptions = {
       target: req.targetUrl,
@@ -29,6 +39,9 @@ app.use(
       agent: httpsAgent,
       onProxyReq: (proxyReq, req, res) => {
         proxyReq.setHeader("Access-Control-Allow-Origin", "*");
+      },
+      onError: (err, req, res) => {
+        res.status(500).send("Proxy error: " + err.message);
       },
     };
 
