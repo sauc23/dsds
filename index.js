@@ -5,7 +5,7 @@ const { HttpsProxyAgent } = require("https-proxy-agent"); // Import directly fro
 const app = express();
 
 // Configure the HTTPS proxy agent
-const httpsAgent = new HttpsProxyAgent("http://194.180.16.105:3128");
+const httpsAgent = new HttpsProxyAgent("https://e3z4acki-gv85bq9:ksc8d3rmv7@de-008.totallyacdn.com:443");
 
 // Proxy middleware options
 const proxyOptions = {
